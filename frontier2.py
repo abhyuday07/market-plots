@@ -88,6 +88,7 @@ def show_frontier(symbol1, symbol2, interval='MONTHLY'):
     plt.ylabel('Return')
 
     pathlib.Path('img/frontier2').mkdir(parents=True, exist_ok=True)
+    plt.show()
     plt.savefig(f'img/frontier2/{symbol1}-{symbol2}.png')
     plt.close()
 

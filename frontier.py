@@ -7,13 +7,15 @@ import alpha_vantage
 import plot_style
 
 
-def show_frontier(symbols, interval='MONTHLY'):
+def show_frontier(symbols, interval='DAILY'):
     #print(f'Symbols: {symbols}')
 
     returns_history = dict()
 
     min_length = None
-
+    sharpe_ratio = 0
+    r_f = 0.05/365
+    opt_weights = []
     for symbol in symbols:
         history = alpha_vantage.get_stock_returns_history(symbol, interval)
         #print(f'Fetched {len(history)} records for symbol {symbol}')
@@ -95,6 +97,13 @@ def show_frontier(symbols, interval='MONTHLY'):
 
         portfolio_returns.append(expected_return)
         portfolio_deviations.append(standard_deviation)
+        print(expected_return)
+        new_sharpe = (expected_return - r_f)/(standard_deviation)
+        if(new_sharpe > sharpe_ratio):
+            sharpe_ratio = new_sharpe
+            opt_weights = []
+            for wt in weights:
+                opt_weights.append(wt)
 
     x_padding = np.average(portfolio_deviations) / 25
     plt.xlim(min(portfolio_deviations) - x_padding,
@@ -104,18 +113,18 @@ def show_frontier(symbols, interval='MONTHLY'):
     plt.ylim(min(portfolio_returns) - y_padding,
              max(portfolio_returns) + y_padding)
 
-    plt.gca().set_xticklabels(['{:.2f}%'.format(x*100)
-                               for x in plt.gca().get_xticks()])
-    plt.gca().set_yticklabels(['{:.2f}%'.format(y*100)
-                               for y in plt.gca().get_yticks()])
+    plt.gca().set_xticklabels(['{:.2f}%'.format(x*100) for x in plt.gca().get_xticks()])
+    plt.gca().set_yticklabels(['{:.2f}%'.format(y*100) for y in plt.gca().get_yticks()])
 
-    plt.title(f'Efficient Frontier {symbols}')
+    plt.title("Efficient Frontier")
 
-    plt.xlabel('Risk')
-    plt.ylabel('Return')
-
+    plt.xlabel("Risk")
+    plt.ylabel("Return")
+    print("Optimal Weights = ",opt_weights)
+    print("Best sharpe_ratio = ",sharpe_ratio)
     pathlib.Path('img/frontier').mkdir(parents=True, exist_ok=True)
     plt.savefig(f'img/frontier/frontier.png')
+    plt.show()
     plt.close()
 
 
